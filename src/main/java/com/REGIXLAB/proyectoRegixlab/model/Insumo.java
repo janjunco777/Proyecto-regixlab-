@@ -40,4 +40,8 @@ public class Insumo {
     @ManyToOne
     @JoinColumn(name = "id_lote")
     private Lote lote;
+
+    @ManyToOne
+    @JoinColumn(name = "idFabricante")
+    private Fabricante fabricante;
 }

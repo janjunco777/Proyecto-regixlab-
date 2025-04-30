@@ -1,39 +1,39 @@
-package com.REGIXLAB.proyectoRegixlab.model;
+package com.REGIXLAB.proyectoRegixlab.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import java.time.LocalDate;
 import lombok.*;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Entity
-@Table(name = "Lote")
+@Table(name = "lote")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
+
 public class Lote {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_lote")
     private Long idLote;
 
-    @Column(name = "numero_lote", unique = true, nullable = false)
-    @NotBlank(message = "El número de lote es obligatorio")
+    @Column(name = "numero_lote", nullable = false, unique = true)
     private String numeroLote;
 
     @Column(name = "fecha_fabricacion")
     private LocalDate fechaFabricacion;
 
     @Column(name = "fecha_vencimiento", nullable = false)
-    @NotNull(message = "La fecha de vencimiento es obligatoria")
     private LocalDate fechaVencimiento;
+
 
     @ManyToOne
     @JoinColumn(name = "id_fabricante", nullable = false)
     private Fabricante fabricante;
 
-    @OneToOne
-    @JoinColumn(name = "registro_invima")
-    private Insumo insumo;
 
-
-
+    @OneToMany(mappedBy = "lote", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Insumo> insumos;
 }
