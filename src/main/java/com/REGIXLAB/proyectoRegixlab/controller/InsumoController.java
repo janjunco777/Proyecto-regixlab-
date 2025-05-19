@@ -1,12 +1,17 @@
 package com.REGIXLAB.proyectoRegixlab.controller;
 
+import com.REGIXLAB.proyectoRegixlab.dto.SemaforizacionDTO;
 import com.REGIXLAB.proyectoRegixlab.model.Insumo;
 import com.REGIXLAB.proyectoRegixlab.repository.InsumoRepository;
+import com.REGIXLAB.proyectoRegixlab.util.ExcelExportadorInsumos;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.REGIXLAB.proyectoRegixlab.dto.ActualizarInsumoDTO;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -44,9 +49,8 @@ public class InsumoController {
     @PutMapping("/{id}")
     public ResponseEntity<String> editarInsumo(
             @PathVariable Long id,
-            @RequestBody Insumo insumoActualizado) {
+            @RequestBody ActualizarInsumoDTO dto) {
 
-        // Buscar el insumo existente
         Optional<Insumo> insumoOpt = insumoRepository.findById(id);
         if (!insumoOpt.isPresent()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Insumo no encontrado");
@@ -54,24 +58,24 @@ public class InsumoController {
 
         Insumo insumo = insumoOpt.get();
 
-        // Actualizar solo los campos permitidos
-        if (insumoActualizado.getNombre() != null) {
-            insumo.setNombre(insumoActualizado.getNombre());
+        if (dto.getNombre() != null) {
+            insumo.setNombre(dto.getNombre());
         }
-        if (insumoActualizado.getCantidad() != null) {
-            insumo.setCantidad(insumoActualizado.getCantidad());
+        if (dto.getCantidad() != null) {
+            insumo.setCantidad(dto.getCantidad());
         }
-        if (insumoActualizado.getLugarAlmacenamiento() != null) {
-            insumo.setLugarAlmacenamiento(insumoActualizado.getLugarAlmacenamiento());
+        if (dto.getLugarAlmacenamiento() != null) {
+            insumo.setLugarAlmacenamiento(dto.getLugarAlmacenamiento());
         }
-        if (insumoActualizado.getEstadoSemaforizacion() != null) {
-            insumo.setEstadoSemaforizacion(insumoActualizado.getEstadoSemaforizacion());
+        if (dto.getEstadoSemaforizacion() != null) {
+            insumo.setEstadoSemaforizacion(dto.getEstadoSemaforizacion());
         }
 
         insumoRepository.save(insumo);
 
         return ResponseEntity.ok("Insumo actualizado exitosamente");
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<String> eliminarInsumo(@PathVariable Long id) {
@@ -87,16 +91,35 @@ public class InsumoController {
         return ResponseEntity.ok("Insumo eliminado exitosamente");
     }
 
-    @GetMapping("/agrupados-por-semaforizacion")
-    public ResponseEntity<Map<String, List<Insumo>>> getInsumosAgrupadosPorSemaforizacion() {
-        // Obtener todos los insumos
+    @GetMapping("/resumen-semaforizacion")
+    public ResponseEntity<List<SemaforizacionDTO>> getResumenSemaforizacion() {
         List<Insumo> insumos = insumoRepository.findAll();
+        int total = insumos.size();
 
-        // Agrupar por estado de semaforización
-        Map<String, List<Insumo>> insumosAgrupados = insumos.stream()
-                .collect(Collectors.groupingBy(Insumo::getEstadoSemaforizacion));
+        Map<String, List<Insumo>> agrupados = insumos.stream()
+                .collect(Collectors.groupingBy(i -> i.getEstadoSemaforizacion() == null ? "desconocido" : i.getEstadoSemaforizacion()));
 
-        return ResponseEntity.ok(insumosAgrupados);
+        List<SemaforizacionDTO> resumen = agrupados.entrySet().stream()
+                .map(entry -> new SemaforizacionDTO(entry.getKey(), entry.getValue(), total))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(resumen);
     }
+
+    @GetMapping("/exportar/excel")
+    public ResponseEntity<byte[]> exportarInsumosExcel() {
+        try {
+            List<Insumo> insumos = insumoRepository.findAll();
+            ByteArrayInputStream stream = ExcelExportadorInsumos.insumosAExcel(insumos);
+
+            return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=insumos.xlsx")
+                    .body(stream.readAllBytes());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
+
 
 }

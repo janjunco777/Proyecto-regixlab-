@@ -1,11 +1,13 @@
 package com.REGIXLAB.proyectoRegixlab.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
-import jakarta.validation.constraints.NotBlank;
+
 @Entity
 @Table(name = "insumos")
 public class Insumo {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_insumo")
@@ -15,19 +17,20 @@ public class Insumo {
     @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
 
-    @Column(name = "registro_invima", length = 50)
-    @NotBlank(message = "El registro invima es obligatorio")
+    @Column(name = "registro_invima", nullable = false, length = 50)
+    @NotBlank(message = "El registro INVIMA es obligatorio")
     private String registroInvima;
 
     @Column(name = "lugar_almacenamiento", length = 100)
     private String lugarAlmacenamiento;
 
     @Column(nullable = false)
-    @NotBlank(message = "La cantidad es obligatorio")
+    @NotNull(message = "La cantidad es obligatoria")
+    @Min(value = 0, message = "La cantidad no puede ser negativa")
     private Integer cantidad;
 
     @Column(name = "estado_semaforizacion", length = 20)
-    private String estadoSemaforizacion; // "rojo", "verde" o "amarillo"
+    private String estadoSemaforizacion; // "rojo", "verde", "amarillo"
 
     @Column(name = "fecha_registro")
     private LocalDate fechaRegistro;
@@ -46,24 +49,10 @@ public class Insumo {
     @NotBlank(message = "El fabricante es obligatorio")
     private String fabricante;
 
+    // Constructor vacío (requerido por JPA)
     public Insumo() {}
 
-    public Insumo(Long idInsumo, String nombre, String registroInvima, Integer cantidad,
-                  String lugarAlmacenamiento, String estadoSemaforizacion, LocalDate fechaRegistro,
-                  LocalDate fechaFinalizacion, LocalDate fechaApertura, String lote, String fabricante) {
-        this.idInsumo = idInsumo;
-        this.nombre = nombre;
-        this.registroInvima = registroInvima;
-        this.cantidad = cantidad;
-        this.lugarAlmacenamiento = lugarAlmacenamiento;
-        this.estadoSemaforizacion = estadoSemaforizacion;
-        this.fechaRegistro = fechaRegistro;
-        this.fechaFinalizacion = fechaFinalizacion;
-        this.fechaApertura = fechaApertura;
-        this.lote = lote;
-        this.fabricante = fabricante;
-    }
-
+    // Getters y Setters
     public Long getIdInsumo() {
         return idInsumo;
     }
@@ -72,19 +61,19 @@ public class Insumo {
         this.idInsumo = idInsumo;
     }
 
-    public @NotBlank(message = "El nombre es obligatorio") String getNombre() {
+    public String getNombre() {
         return nombre;
     }
 
-    public void setNombre(@NotBlank(message = "El nombre es obligatorio") String nombre) {
+    public void setNombre(String nombre) {
         this.nombre = nombre;
     }
 
-    public @NotBlank(message = "El registro invima es obligatorio") String getRegistroInvima() {
+    public String getRegistroInvima() {
         return registroInvima;
     }
 
-    public void setRegistroInvima(@NotBlank(message = "El registro invima es obligatorio") String registroInvima) {
+    public void setRegistroInvima(String registroInvima) {
         this.registroInvima = registroInvima;
     }
 
@@ -96,20 +85,12 @@ public class Insumo {
         this.lugarAlmacenamiento = lugarAlmacenamiento;
     }
 
-    public @NotBlank(message = "La cantidad es obligatorio") Integer getCantidad() {
+    public Integer getCantidad() {
         return cantidad;
     }
 
-    public void setCantidad(@NotBlank(message = "La cantidad es obligatorio") Integer cantidad) {
+    public void setCantidad(Integer cantidad) {
         this.cantidad = cantidad;
-    }
-
-    public LocalDate getFechaRegistro() {
-        return fechaRegistro;
-    }
-
-    public void setFechaRegistro(LocalDate fechaRegistro) {
-        this.fechaRegistro = fechaRegistro;
     }
 
     public String getEstadoSemaforizacion() {
@@ -118,6 +99,14 @@ public class Insumo {
 
     public void setEstadoSemaforizacion(String estadoSemaforizacion) {
         this.estadoSemaforizacion = estadoSemaforizacion;
+    }
+
+    public LocalDate getFechaRegistro() {
+        return fechaRegistro;
+    }
+
+    public void setFechaRegistro(LocalDate fechaRegistro) {
+        this.fechaRegistro = fechaRegistro;
     }
 
     public LocalDate getFechaApertura() {
@@ -136,19 +125,19 @@ public class Insumo {
         this.fechaFinalizacion = fechaFinalizacion;
     }
 
-    public @NotBlank(message = "El lote es obligatorio") String getLote() {
+    public String getLote() {
         return lote;
     }
 
-    public void setLote(@NotBlank(message = "El lote es obligatorio") String lote) {
+    public void setLote(String lote) {
         this.lote = lote;
     }
 
-    public @NotBlank(message = "El fabricante es obligatorio") String getFabricante() {
+    public String getFabricante() {
         return fabricante;
     }
 
-    public void setFabricante(@NotBlank(message = "El fabricante es obligatorio") String fabricante) {
+    public void setFabricante(String fabricante) {
         this.fabricante = fabricante;
     }
 }
