@@ -1,31 +1,43 @@
 package com.REGIXLAB.proyectoRegixlab.config;
 
-import lombok.RequiredArgsConstructor;
+import com.REGIXLAB.proyectoRegixlab.config.JwtRequestFilter;
+import com.REGIXLAB.proyectoRegixlab.service.UsuarioDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
-    // ... otras configuraciones
+    private final JwtRequestFilter jwtRequestFilter;
+    private final UsuarioDetailsService usuarioDetailsService;
+
+    public SecurityConfig(JwtRequestFilter jwtRequestFilter, UsuarioDetailsService usuarioDetailsService) {
+        this.jwtRequestFilter = jwtRequestFilter;
+        this.usuarioDetailsService = usuarioDetailsService;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf().disable()
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/api/usuarios/cambiar-contrasena").authenticated()
-                        // ... otras rutas
+                        .anyRequest().permitAll() // 🔓 Permitir todas las rutas
                 )
-                .httpBasic(Customizer.withDefaults());
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -34,4 +46,15 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+        authProvider.setUserDetailsService(usuarioDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
+        return new ProviderManager(authProvider);
+    }
 }
+
+
+

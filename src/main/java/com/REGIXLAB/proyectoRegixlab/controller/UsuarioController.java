@@ -2,7 +2,9 @@ package com.REGIXLAB.proyectoRegixlab.controller;
 
 import com.REGIXLAB.proyectoRegixlab.dto.ActualizarUsuarioDTO;
 import com.REGIXLAB.proyectoRegixlab.dto.CambioContrasenaDTO;
+import com.REGIXLAB.proyectoRegixlab.model.HistorialUsuario;
 import com.REGIXLAB.proyectoRegixlab.model.Usuario;
+import com.REGIXLAB.proyectoRegixlab.repository.HistorialUsuarioRepository;
 import com.REGIXLAB.proyectoRegixlab.repository.UsuarioRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,6 +22,10 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    @Autowired
+    private HistorialUsuarioRepository historialUsuarioRepository;
+
+
 
     // Registrar nuevo usuario
     @PostMapping
@@ -120,6 +127,23 @@ public class UsuarioController {
         // Guardar cambios
         Usuario usuarioActualizado = usuarioRepository.save(usuario);
 
+        //HISTORIAL DE USUARIO MODIFICADO
+        if (usuarioDTO.getNombre() != null && !usuarioDTO.getNombre().equals(usuario.getNombre())) {
+            historialUsuarioRepository.save(new HistorialUsuario(
+                    usuario.getIdentificacion(), "nombre",
+                    usuario.getNombre(), usuarioDTO.getNombre(),
+                    LocalDateTime.now()
+            ));
+            usuario.setNombre(usuarioDTO.getNombre());
+        }
+
         return ResponseEntity.ok(usuarioActualizado);
     }
+    //ENDPOINT HISTORIAL
+    @GetMapping("/{identificacion}/historial")
+    public ResponseEntity<List<HistorialUsuario>> obtenerHistorial(@PathVariable String identificacion) {
+        List<HistorialUsuario> historial = historialUsuarioRepository.findByIdentificacionUsuario(identificacion);
+        return ResponseEntity.ok(historial);
+    }
+
 }

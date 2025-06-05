@@ -3,6 +3,8 @@ package com.REGIXLAB.proyectoRegixlab.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "usuarios") // Asegúrate que coincida con tu tabla en SQL Server
 public class Usuario {
@@ -32,6 +34,16 @@ public class Usuario {
 
     @Column(name = "registro_profesional", length = 50)
     private String registroProfesional;
+
+    @Column(name = "intentos_fallidos")
+    private int intentosFallidos = 0;
+
+    @Column(name = "cuenta_bloqueada")
+    private boolean cuentaBloqueada = false;
+
+    @Column(name = "fecha_bloqueo")
+    private LocalDateTime fechaBloqueo;
+
 
 
     public Usuario() {}
@@ -103,5 +115,29 @@ public class Usuario {
 
     public void setRegistroProfesional(String registroProfesional) {
         this.registroProfesional = registroProfesional;
+    }
+
+    public int getIntentosFallidos() {
+        return intentosFallidos;
+    }
+
+    public void setIntentosFallidos(int intentosFallidos) {
+        this.intentosFallidos = intentosFallidos;
+    }
+
+    public boolean isCuentaBloqueada() {
+        return cuentaBloqueada;
+    }
+
+    public void setCuentaBloqueada(boolean cuentaBloqueada) {
+        this.cuentaBloqueada = cuentaBloqueada;
+    }
+
+    public LocalDateTime getFechaBloqueo() {
+        return fechaBloqueo;
+    }
+
+    public void setFechaBloqueo(LocalDateTime fechaBloqueo) {
+        this.fechaBloqueo = fechaBloqueo;
     }
 }
